@@ -1,13 +1,15 @@
-import modelEmpresa from '../model/empresa';
+import express from 'express';
+import IEmpresa from '../model/empresa';
 
-function Get(): modelEmpresa {
-    let empresa = new modelEmpresa();
+const ControllerEmpresa = express.Router();
+
+ControllerEmpresa.get('/empresa', (req, res) =>{
+    let empresa = {} as IEmpresa;
     empresa.id = 1;
     empresa.nome_fantasia = 'PATRICK CORP';
     empresa.razao_social = 'PATRICK CORP LTDA';
     empresa.cnpj = '11111111000111';
+    res.status(200).send(empresa);
+});
 
-    return empresa;
-}
-
-export { Get };
+export { ControllerEmpresa };

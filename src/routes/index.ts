@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { login } from './login';
-import { empresa } from './empresa';
-import { cliente } from './cliente';
+import { ControllerLogin } from '../controller/login';
+import { ControllerEmpresa } from '../controller/empresa';
+import { ControllerCliente } from '../controller/cliente';
 
 const routes = Router();
 
-routes.use(login);
-routes.use(empresa);
-routes.use(cliente);
+routes.use(ControllerLogin);
+routes.use(ControllerEmpresa);
+routes.use(ControllerCliente);
 
 export { routes };

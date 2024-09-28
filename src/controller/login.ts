@@ -1,11 +1,13 @@
-import modelUsuario from '../model/usuario';
+import IUsuario from '../model/usuario';
+import express from 'express';
 
-function Get(): modelUsuario {
-    let usuario = new modelUsuario;
+const ControllerLogin = express.Router();
+
+ControllerLogin.get('/login', (req, res) => {
+    let usuario = new IUsuario;
     usuario.id = 1;
     usuario.nome = 'patrick';
+    res.status(200).send(usuario);
+});
 
-    return usuario;
-}
-
-export { Get };
+export { ControllerLogin };
