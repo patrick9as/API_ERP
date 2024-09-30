@@ -8,5 +8,20 @@ datasource db {
 }
 
 model empresa {
-  id Int @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now())
+  nome_fantasia        String
+  razao_social         String
+  cnpj                 String
+  ativo                Boolean
+  endereco             String?
+  numero               String?
+  bairro               String?
+  cidade               String?
+  uf                   String?
+  telefone             String?
+  email                String?
+  id_grupo             Int?
+  versao_sincronizador String?
 }
