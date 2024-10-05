@@ -1,27 +1,452 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
+  schemas  = ["adm", "cadastros", "compras", "dbo", "pedidos", "usuarios", "vendas"]
 }
 
-model empresa {
-  id                   Int      @id @default(autoincrement())
-  created_at           DateTime @default(now())
-  updated_at           DateTime @default(now())
-  nome_fantasia        String
-  razao_social         String
-  cnpj                 String
-  ativo                Boolean
-  endereco             String?
-  numero               String?
-  bairro               String?
-  cidade               String?
-  uf                   String?
-  telefone             String?
-  email                String?
+model cargos {
+  id                Int                 @id(map: "PK_cargos_id") @default(autoincrement())
+  descricao         String?             @db.VarChar(50)
+  cargos_permissoes cargos_permissoes[]
+  usuarios          usuarios[]
+
+  @@schema("usuarios")
+}
+
+model cargos_permissoes {
+  id           Int        @id(map: "PK_cargos_permissoes_id") @default(autoincrement())
+  id_cargo     Int
+  id_permissao Int
+  cargos       cargos     @relation(fields: [id_cargo], references: [id], onUpdate: NoAction, map: "FK_cargos_permissoes_id_cargo")
+  permissoes   permissoes @relation(fields: [id_permissao], references: [id], onUpdate: NoAction, map: "FK_cargos_permissoes_id_permissao")
+
+  @@unique([id_cargo, id_permissao], map: "KEY_cargos_permissoes")
+  @@schema("usuarios")
+}
+
+model clientes {
+  guid               String    @id(map: "PK_clientes_guid") @default(dbgenerated("newid()"), map: "DF__clientes__guid__671F4F74") @db.UniqueIdentifier
+  created_at         DateTime  @default(now(), map: "DF__clientes__create__681373AD") @db.DateTime
+  updated_at         DateTime  @default(now(), map: "DF__clientes__update__690797E6") @db.DateTime
+  id                 String    @db.VarChar(50)
+  id_empresa         Int
+  ativo              Boolean
+  nome_fantasia      String?   @db.VarChar(150)
+  razao_social       String?   @db.VarChar(150)
+  cnpj               String?   @db.VarChar(14)
+  cpf                String?   @db.VarChar(50)
+  inscricao_estadual String?   @db.VarChar(50)
+  rg                 String?   @db.VarChar(50)
+  cep                String?   @db.VarChar(50)
+  endereco           String?   @db.VarChar(150)
+  numero             String?   @db.VarChar(50)
+  bairro             String?   @db.VarChar(50)
+  cidade             String?   @db.VarChar(50)
+  uf                 String?   @db.VarChar(2)
+  telefone           String?   @db.VarChar(50)
+  celular            String?   @db.VarChar(50)
+  email              String?   @db.VarChar(150)
+  data_cadastro      DateTime? @db.DateTime
+  empresas           empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_clientes_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_clientes")
+  @@schema("cadastros")
+}
+
+model compras {
+  guid            String    @id(map: "PK_compras_guid") @default(dbgenerated("newid()"), map: "DF__compras__guid__4F7CD00D") @db.UniqueIdentifier
+  created_at      DateTime  @default(now(), map: "DF__compras__created__5165187F") @db.DateTime
+  updated_at      DateTime  @default(now(), map: "DF__compras__updated__52593CB8") @db.DateTime
+  id              String    @db.VarChar(50)
+  id_empresa      Int
+  ativo           Boolean
+  id_fornecedor   String?   @db.VarChar(50)
+  numero_nota     String?   @db.VarChar(50)
+  serie           String?   @db.VarChar(50)
+  chave_acesso    String?   @db.VarChar(44)
+  data_emissao    DateTime? @db.DateTime
+  data_lancamento DateTime? @db.DateTime
+  processada      Boolean?
+  valor_bruto     Decimal?  @db.Decimal(18, 2)
+  valor_liquido   Decimal?  @db.Decimal(18, 2)
+  empresas        empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_compras_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_compras")
+  @@schema("compras")
+}
+
+model emitentes {
+  guid                   String    @id(map: "PK_emitentes_guid") @default(dbgenerated("newid()"), map: "DF__emitentes__guid__5006DFF2") @db.UniqueIdentifier
+  created_at             DateTime  @default(now(), map: "DF__emitentes__creat__50FB042B") @db.DateTime
+  updated_at             DateTime  @default(now(), map: "DF__emitentes__updat__51EF2864") @db.DateTime
+  id                     String    @db.VarChar(50)
+  id_empresa             Int
+  ativo                  Boolean
+  nome_fantasia          String?   @db.VarChar(150)
+  razao_social           String?   @db.VarChar(150)
+  cnpj                   String?   @db.VarChar(14)
+  inscricao_estadual     String?   @db.VarChar(50)
+  email_usuario          String?   @db.VarChar(50)
+  email_senha            String?   @db.VarChar(100)
+  certificado_titulo     String?   @db.VarChar(50)
+  certificado_vencimento DateTime? @db.DateTime
+  certificado_senha      String?   @db.VarChar(50)
+  empresas               empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_emitentes_id_empresa")
+
+  @@unique([id, id_empresa], map: "UK_emitentes")
+  @@schema("cadastros")
+}
+
+model empresas {
+  guid                 String                       @default(dbgenerated("newid()"), map: "DF__empresas__guid__4F47C5E3") @db.UniqueIdentifier
+  id                   Int                          @id(map: "PK_empresas_id")
+  created_at           DateTime                     @default(now(), map: "DF__empresas__create__503BEA1C") @db.DateTime
+  updated_at           DateTime                     @default(now(), map: "DF__empresas__update__51300E55") @db.DateTime
+  nome_fantasia        String                       @db.VarChar(150)
+  razao_social         String                       @db.VarChar(150)
+  cnpj                 String                       @unique(map: "KEY_empresas_cnpj") @db.VarChar(14)
+  ativo                Boolean                      @default(true, map: "DF__empresas__ativo__5224328E")
+  endereco             String?                      @db.VarChar(150)
+  numero               String?                      @db.VarChar(50)
+  bairro               String?                      @db.VarChar(50)
+  cidade               String?                      @db.VarChar(50)
+  uf                   String?                      @db.VarChar(2)
+  telefone             String?                      @db.VarChar(50)
+  email                String?                      @db.VarChar(150)
   id_grupo             Int?
-  versao_sincronizador String?
+  versao_sincronizador String?                      @db.VarChar(50)
+  clientes             clientes[]
+  compras              compras[]
+  emitentes            emitentes[]
+  formas_pagamento     cadastros_formas_pagamento[]
+  fornecedores         fornecedores[]
+  funcionarios         funcionarios[]
+  modelo               modelo[]
+  pedidos              pedidos[]
+  produtos             vendas_produtos[]            @ignore
+  usuarios             usuarios[]
+  vendas               vendas[]
+
+  @@schema("adm")
+}
+
+model empresas_grupos {
+  created_at DateTime @default(now(), map: "DF__empresas___creat__57A801BA") @db.DateTime
+  id         Int      @unique(map: "UK_empresas_grupo")
+  ativo      Boolean
+  descricao  String?  @db.VarChar(50)
+
+  @@schema("adm")
+}
+
+model pedidos_formas_pagamento {
+  guid               String    @default(dbgenerated("newid()"), map: "DF__formas_pag__guid__373B3228") @db.UniqueIdentifier
+  created_at         DateTime  @default(now(), map: "DF__formas_pa__creat__382F5661") @db.DateTime
+  updated_at         DateTime  @default(now(), map: "DF__formas_pa__updat__39237A9A") @db.DateTime
+  id                 String    @unique(map: "KEY_formas_pagamento") @db.VarChar(50)
+  id_empresa         Int
+  ativo              Boolean
+  id_pedido          String?   @db.VarChar(50)
+  id_cliente         String?   @db.VarChar(50)
+  id_forma_pagamento String?   @db.VarChar(50)
+  numero_documento   String?   @db.VarChar(50)
+  data_vencimento    DateTime? @db.DateTime
+  valor              Decimal?  @db.Decimal(18, 2)
+  juros              Decimal?  @db.Decimal(18, 2)
+  desconto           Decimal?  @db.Decimal(18, 2)
+  pagamento_recebido Boolean?
+
+  @@map("formas_pagamento")
+  @@schema("pedidos")
+}
+
+model vendas_formas_pagamento {
+  guid               String    @default(dbgenerated("newid()"), map: "DF__formas_pag__guid__29E1370A") @db.UniqueIdentifier
+  created_at         DateTime  @default(now(), map: "DF__formas_pa__creat__2AD55B43") @db.DateTime
+  updated_at         DateTime  @default(now(), map: "DF__formas_pa__updat__2BC97F7C") @db.DateTime
+  id                 String    @db.VarChar(50)
+  id_empresa         Int
+  ativo              Boolean
+  id_venda           String?   @db.VarChar(50)
+  id_cliente         String?   @db.VarChar(50)
+  id_forma_pagamento String?   @db.VarChar(50)
+  numero_documento   String?   @db.VarChar(50)
+  valor              Decimal?  @db.Decimal(18, 2)
+  juros              Decimal?  @db.Decimal(18, 2)
+  desconto           Decimal?  @db.Decimal(18, 2)
+  valor_pago         String?   @db.VarChar(50)
+  pagamento_recebido Boolean?
+  data_emissao       DateTime? @db.DateTime
+  data_vencimento    DateTime? @db.DateTime
+  data_pagamento     DateTime? @db.DateTime
+
+  @@unique([id, id_empresa], map: "KEY_formas_pagamento")
+  @@map("formas_pagamento")
+  @@schema("vendas")
+}
+
+model cadastros_formas_pagamento {
+  guid        String   @id(map: "PK_formas_pagamento_guid") @default(dbgenerated("newid()"), map: "DF__formas_pag__guid__49C3F6B7") @db.UniqueIdentifier
+  created_at  DateTime @default(now(), map: "DF__formas_pa__creat__4AB81AF0") @db.DateTime
+  updated_at  DateTime @default(now(), map: "DF__formas_pa__updat__4BAC3F29") @db.DateTime
+  id          String   @db.VarChar(50)
+  id_empresa  Int
+  ativo       Boolean
+  descricao   String?  @db.VarChar(50)
+  id_auxiliar String?  @db.VarChar(50)
+  empresas    empresas @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_formas_pagamento_id_empresa")
+
+  @@map("formas_pagamento")
+  @@schema("cadastros")
+}
+
+model fornecedores {
+  guid                String               @id(map: "PK_fornecedores_guid") @default(dbgenerated("newid()"), map: "DF__fornecedor__guid__3E52440B") @db.UniqueIdentifier
+  created_at          DateTime             @default(now(), map: "DF__fornecedo__creat__3F466844") @db.DateTime
+  updated_at          DateTime             @default(now(), map: "DF__fornecedo__updat__403A8C7D") @db.DateTime
+  id                  String               @db.VarChar(50)
+  id_empresa          Int
+  ativo               Boolean
+  nome_fantasia       String?              @db.VarChar(150)
+  razao_social        String?              @db.VarChar(150)
+  cnpj                String?              @db.VarChar(14)
+  inscricao_estadual  String?              @db.VarChar(50)
+  rg                  String?              @db.VarChar(50)
+  cep                 String?              @db.VarChar(50)
+  endereco            String?              @db.VarChar(150)
+  numero              String?              @db.VarChar(50)
+  bairro              String?              @db.VarChar(50)
+  cidade              String?              @db.VarChar(50)
+  uf                  String?              @db.VarChar(2)
+  telefone            String?              @db.VarChar(50)
+  celular             String?              @db.VarChar(50)
+  email               String?              @db.VarChar(50)
+  data_cadastro       DateTime?            @db.DateTime
+  id_grupo            Int?
+  empresas            empresas             @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_fornecedores_id_empresa")
+  fornecedores_grupos fornecedores_grupos? @relation(fields: [id_grupo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fornecedores_id_grupo")
+
+  @@unique([id, id_empresa], map: "KEY_fornecedores")
+  @@schema("cadastros")
+}
+
+model fornecedores_grupos {
+  id           Int            @id(map: "PK_fornecedores_grupo_guid") @default(autoincrement())
+  created_at   DateTime       @default(now(), map: "DF__fornecedo__creat__69C6B1F5") @db.DateTime
+  updated_at   DateTime       @default(now(), map: "DF__fornecedo__updat__6ABAD62E") @db.DateTime
+  ativo        Boolean
+  descricao    String?        @db.VarChar(150)
+  fornecedores fornecedores[]
+
+  @@schema("cadastros")
+}
+
+model funcionarios {
+  guid          String    @id(map: "PK_funcionarios_guid") @default(dbgenerated("newid()"), map: "DF__funcionari__guid__0E6E26BF") @db.UniqueIdentifier
+  created_at    DateTime  @default(now(), map: "DF__funcionar__creat__0F624AF8") @db.DateTime
+  updated_at    DateTime  @default(now(), map: "DF__funcionar__updat__10566F31") @db.DateTime
+  id            String    @db.VarChar(50)
+  id_empresa    Int
+  ativo         Boolean
+  nome          String?   @db.VarChar(50)
+  senha         String?   @db.VarChar(50)
+  cargo         String?   @db.VarChar(50)
+  data_cadastro DateTime? @db.DateTime
+  id_auxiliar   String?   @db.VarChar(50)
+  empresas      empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_funcionarios_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_funcionarios")
+  @@schema("cadastros")
+}
+
+model log {
+  created_at DateTime @default(now(), map: "DF__log__created_at__489AC854") @db.DateTime
+  id         Int      @id(map: "PK_log_id") @default(autoincrement())
+  descricao  String   @db.VarChar(200)
+  id_empresa Int?
+
+  @@schema("adm")
+}
+
+model modelo {
+  guid       String   @id(map: "PK_modelo_guid") @default(dbgenerated("newid()"), map: "DF__modelo__guid__60A75C0F") @db.UniqueIdentifier
+  created_at DateTime @default(now(), map: "DF__modelo__created___619B8048") @db.DateTime
+  updated_at DateTime @default(now(), map: "DF__modelo__updated___628FA481") @db.DateTime
+  id         String   @db.VarChar(50)
+  id_empresa Int
+  ativo      Boolean
+  empresas   empresas @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_modelo_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_modelo")
+  @@schema("dbo")
+}
+
+model pedidos {
+  guid               String    @id(map: "PK_pedidos_guid") @default(dbgenerated("newid()"), map: "DF__pedidos__guid__308E3499") @db.UniqueIdentifier
+  created_at         DateTime  @default(now(), map: "DF__pedidos__created__318258D2") @db.DateTime
+  updated_at         DateTime  @default(now(), map: "DF__pedidos__updated__32767D0B") @db.DateTime
+  id                 String    @db.VarChar(50)
+  id_empresa         Int
+  ativo              Boolean
+  id_cliente         String?   @db.VarChar(50)
+  id_funcionario     String?   @db.VarChar(50)
+  valor_bruto        Decimal?  @db.Decimal(18, 2)
+  valor_liquido      Decimal?  @db.Decimal(18, 2)
+  desconto           Decimal?  @db.Decimal(18, 2)
+  frete              Decimal?  @db.Decimal(18, 2)
+  orcamento          Boolean?
+  processado         Boolean?
+  data_emissao       DateTime? @db.DateTime
+  data_processamento DateTime? @db.DateTime
+  empresas           empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_pedidos_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_pedidos")
+  @@schema("pedidos")
+}
+
+model permissoes {
+  id                Int                 @id(map: "PK_permissoes_id") @default(autoincrement())
+  descricao         String?             @db.VarChar(50)
+  cargos_permissoes cargos_permissoes[]
+
+  @@schema("usuarios")
+}
+
+model cadastros_produtos {
+  guid          String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__0F2D40CE") @db.UniqueIdentifier
+  created_at    DateTime @default(now(), map: "DF__produtos__create__10216507") @db.DateTime
+  updated_at    DateTime @default(now(), map: "DF__produtos__update__11158940") @db.DateTime
+  id            String   @unique(map: "KEY_produtos") @db.VarChar(50)
+  id_empresa    Int
+  ativo         Boolean
+  descricao     String?  @db.VarChar(150)
+  referencia    String?  @db.VarChar(50)
+  custo_compra  Decimal? @db.Decimal(18, 2)
+  custo_venda   Decimal? @db.Decimal(18, 2)
+  preco         Decimal? @db.Decimal(18, 2)
+  markup        Decimal? @db.Decimal(18, 2)
+  categoria_1   String?  @db.VarChar(50)
+  categoria_2   String?  @db.VarChar(50)
+  categoria_3   String?  @db.VarChar(50)
+  unidade       String?  @db.VarChar(50)
+  marca         String?  @db.VarChar(50)
+  estoque       Decimal? @db.Decimal(18, 2)
+  id_fornecedor String?  @db.VarChar(50)
+
+  @@map("produtos")
+  @@schema("cadastros")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model vendas_produtos {
+  guid                String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__40C49C62") @db.UniqueIdentifier
+  created_at          DateTime @default(now(), map: "DF__produtos__create__41B8C09B") @db.DateTime
+  updated_at          DateTime @default(now(), map: "DF__produtos__update__42ACE4D4") @db.DateTime
+  id                  String   @db.VarChar(50)
+  id_empresa          Int
+  ativo               Boolean
+  id_venda            String?  @db.VarChar(50)
+  id_produto          String?  @db.VarChar(50)
+  descricao           String?  @db.VarChar(150)
+  unidade             String?  @db.VarChar(50)
+  quantidade          Decimal? @db.Decimal(18, 4)
+  valor_unitario      Decimal? @db.Decimal(18, 2)
+  valor_total_bruto   Decimal? @db.Decimal(18, 2)
+  valor_total_liquido Decimal? @db.Decimal(18, 2)
+  custo_total_compra  Decimal? @db.Decimal(18, 2)
+  custo_total_venda   Decimal? @db.Decimal(18, 2)
+  desconto            Decimal? @db.Decimal(18, 2)
+  empresas            empresas @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_produtos_id_empresa")
+
+  @@map("produtos")
+  @@ignore
+  @@schema("vendas")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model pedidos_produtos {
+  guid                String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__477199F1") @db.UniqueIdentifier
+  created_at          DateTime @default(now(), map: "DF__produtos__create__4865BE2A") @db.DateTime
+  updated_at          DateTime @default(now(), map: "DF__produtos__update__4959E263") @db.DateTime
+  id                  String   @db.VarChar(50)
+  id_empresa          Int
+  ativo               Boolean
+  id_pedido           String?  @db.VarChar(50)
+  id_produto          String?  @db.VarChar(50)
+  descricao           String?  @db.VarChar(150)
+  unidade             String?  @db.VarChar(50)
+  quantidade          Decimal? @db.Decimal(18, 4)
+  valor_unitario      Decimal? @db.Decimal(18, 2)
+  valor_total_bruto   Decimal? @db.Decimal(18, 2)
+  valor_total_liquido Decimal? @db.Decimal(18, 2)
+  custo_total_compra  Decimal? @db.Decimal(18, 2)
+  custo_total_venda   Decimal? @db.Decimal(18, 2)
+  desconto            Decimal? @db.Decimal(18, 2)
+
+  @@map("produtos")
+  @@ignore
+  @@schema("pedidos")
+}
+
+model compras_produtos {
+  guid              String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__59FA5E80") @db.UniqueIdentifier
+  created_at        DateTime @default(now(), map: "DF__produtos__create__5AEE82B9") @db.DateTime
+  updated_at        DateTime @default(now(), map: "DF__produtos__update__5BE2A6F2") @db.DateTime
+  id                String   @unique(map: "KEY_produtos") @db.VarChar(50)
+  id_empresa        Int
+  ativo             Boolean
+  id_compra         String?  @db.VarChar(50)
+  id_produto        String?  @db.VarChar(50)
+  sku               String?  @db.VarChar(50)
+  descricao         String?  @db.VarChar(150)
+  unidade           String?  @db.VarChar(50)
+  quantidade_compra Decimal? @db.Decimal(18, 4)
+  custo_compra      Decimal? @db.Decimal(18, 2)
+  fator_divisao     Decimal? @db.Decimal(18, 4)
+  custo_total       Decimal? @db.Decimal(18, 2)
+
+  @@map("produtos")
+  @@schema("compras")
+}
+
+model usuarios {
+  id         Int      @id(map: "PK_usuarios_id2") @default(autoincrement())
+  id_empresa Int
+  created_at DateTime @default(now(), map: "DF__usuarios__create__24E777C3") @db.DateTime
+  updated_at DateTime @default(now(), map: "DF__usuarios__update__25DB9BFC") @db.DateTime
+  usuario    String   @db.VarChar(50)
+  senha      String   @db.VarChar(50)
+  nome       String   @db.VarChar(50)
+  id_cargo   Int
+  cargos     cargos   @relation(fields: [id_cargo], references: [id], onUpdate: NoAction, map: "FK_usuarios_id_cargo")
+  empresas   empresas @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_usuarios_id_empresa")
+
+  @@schema("usuarios")
+}
+
+model vendas {
+  guid           String    @id(map: "PK_vendas_guid") @default(dbgenerated("newid()"), map: "DF__vendas__guid__15DA3E5D") @db.UniqueIdentifier
+  created_at     DateTime  @default(now(), map: "DF__vendas__created___16CE6296") @db.DateTime
+  updated_at     DateTime  @default(now(), map: "DF__vendas__updated___17C286CF") @db.DateTime
+  id             String    @db.VarChar(50)
+  id_empresa     Int
+  ativo          Boolean
+  id_cliente     String?   @db.VarChar(50)
+  id_funcionario String?   @db.VarChar(50)
+  id_pedido      String?   @db.VarChar(50)
+  valor_bruto    Decimal?  @db.Decimal(18, 2)
+  valor_liquido  Decimal?  @db.Decimal(18, 2)
+  desconto       Decimal?  @db.Decimal(18, 2)
+  valor_pago     Decimal?  @db.Decimal(18, 2)
+  frete          Decimal?  @db.Decimal(18, 2)
+  data_emissao   DateTime? @db.DateTime
+  empresas       empresas  @relation(fields: [id_empresa], references: [id], onUpdate: NoAction, map: "FK_vendas_id_empresa")
+
+  @@unique([id, id_empresa], map: "KEY_vendas")
+  @@schema("vendas")
 }

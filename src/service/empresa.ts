@@ -2,9 +2,10 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient()
 
-async function Post(data: Prisma.empresaCreateInput) {
-    const Empresa = await prisma.empresa.create({
+async function Post(data: Prisma.empresasCreateInput) {
+    const Empresa = await prisma.empresas.create({
         data: {
+            id: data.id,
             nome_fantasia: data.nome_fantasia,
             razao_social: data.razao_social,
             cnpj: data.cnpj,
@@ -15,12 +16,12 @@ async function Post(data: Prisma.empresaCreateInput) {
 }
 
 async function GetAll() {
-    const Empresa = await prisma.empresa.findMany();
+    const Empresa = await prisma.empresas.findMany();
     return(Empresa);
 }
 
 async function GetByID(id: number) {
-    const Empresa = await prisma.empresa.findUnique({
+    const Empresa = await prisma.empresas.findUnique({
         where: {
             id: id
         }
@@ -29,7 +30,7 @@ async function GetByID(id: number) {
 }
 
 async function GetByNome(nome: string) {
-    const empresas = await prisma.empresa.findMany({
+    const empresas = await prisma.empresas.findMany({
         where: {
             OR: [
                 { nome_fantasia: { contains: nome } },
