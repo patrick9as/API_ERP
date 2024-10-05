@@ -1,12 +1,20 @@
-import { generateToken } from '../utils/jwt';
-import IUsuario from '../contract/usuario';
+import { IUsuario } from '../contract/login';
+import { JSONWebToken } from '../utils/jwt';
+import { GetByUsuarioAndSenha } from '../repository/usuarios';
 
-function Autenticar (data: IUsuario) {
-    if (data.usuario && data.senha) {
-        return generateToken(data);
-    } else {
-        throw new Error("Usuário ou senha inválidos");
-    }
+async function Login(data: IUsuario) {
+
+    const usuario = await GetByUsuarioAndSenha(data);
+
+    if (usuario) {
+        //Factory de autenticações
+        let auth = new JSONWebToken;
+
+        if (auth.Login(data))
+            return auth;
+    };
+
+    return null;
 }
 
-export { Autenticar }
+export { Login }
