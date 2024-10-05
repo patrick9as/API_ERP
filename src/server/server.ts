@@ -1,8 +1,6 @@
 import express from 'express';
-import { routes } from '../routes/index';
 import 'dotenv/config';
-
-console.log(process.env.JWT_SECRET_KEY)
+import { routes } from '../routes/index';
 
 var cors = require('cors');
 const { expressjwt } = require('express-jwt')
