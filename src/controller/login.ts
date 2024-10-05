@@ -1,13 +1,11 @@
-import IUsuario from '../model/usuario';
 import express from 'express';
+import { Autenticar } from '../service/login';
 
 const ControllerLogin = express.Router();
 
 ControllerLogin.get('/login', (req, res) => {
-    let usuario = new IUsuario;
-    usuario.id = 1;
-    usuario.nome = 'patrick';
-    res.status(200).send(usuario);
+    console.log(req.body)
+    res.status(200).send(Autenticar(req.body));
 });
 
 export { ControllerLogin };
