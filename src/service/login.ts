@@ -2,7 +2,7 @@ import { IUsuario } from '../contract/login';
 import { JSONWebToken } from '../utils/jwt';
 import { GetByUsuarioAndSenha } from '../repository/usuarios';
 
-async function Login(data: IUsuario) {
+async function Logar(data: IUsuario) {
 
     const usuario = await GetByUsuarioAndSenha(data);
 
@@ -17,4 +17,4 @@ async function Login(data: IUsuario) {
     return null;
 }
 
-export { Login }
+export { Logar }
