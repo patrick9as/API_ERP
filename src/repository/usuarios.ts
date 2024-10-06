@@ -18,4 +18,20 @@ async function GetByUsuarioAndSenha(usuario: IUsuario) {
     return null;  // Usuário ou senha inválidos
 }
 
-export { GetByUsuarioAndSenha };
+async function PostUsuario(data: IUsuario) {
+    const hashedPassword = await hashPassword(data.senha);
+
+    const novoUsuario = await prisma.usuarios.create({
+        data: {
+            id_empresa: data.id_empresa,
+            usuario: data.usuario,
+            senha: hashedPassword,
+            nome: data.nome,
+            id_cargo: data.id_cargo
+        }
+    });
+
+    return novoUsuario;
+}
+
+export { GetByUsuarioAndSenha, PostUsuario };
