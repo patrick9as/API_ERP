@@ -2,7 +2,10 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient()
 
-async function Post(data: Prisma.empresasCreateInput) {
+async function CadastrarEmpresa(data: Prisma.empresasCreateInput) {
+    if (Array.isArray(data)) {
+        throw new Error('Array não permitido!');
+    }
     const Empresa = await prisma.empresas.create({
         data: {
             id: data.id,
@@ -15,12 +18,12 @@ async function Post(data: Prisma.empresasCreateInput) {
     return(Empresa.id)
 }
 
-async function GetAll() {
+async function BuscarEmpresas() {
     const Empresa = await prisma.empresas.findMany();
     return(Empresa);
 }
 
-async function GetByID(id: number) {
+async function BuscarEmpresaPorID(id: number) {
     const Empresa = await prisma.empresas.findUnique({
         where: {
             id: id
@@ -29,7 +32,7 @@ async function GetByID(id: number) {
     return(Empresa);
 }
 
-async function GetByNome(nome: string) {
+async function BuscarEmpresasPorNome(nome: string) {
     const empresas = await prisma.empresas.findMany({
         where: {
             OR: [
@@ -41,4 +44,4 @@ async function GetByNome(nome: string) {
     return empresas;
 }
 
-export { Post, GetAll, GetByID, GetByNome };
+export { CadastrarEmpresa, BuscarEmpresas, BuscarEmpresaPorID, BuscarEmpresasPorNome };
