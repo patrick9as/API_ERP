@@ -373,7 +373,7 @@ model pedidos_produtos {
   guid                String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__477199F1") @db.UniqueIdentifier
   created_at          DateTime @default(now(), map: "DF__produtos__create__4865BE2A") @db.DateTime
   updated_at          DateTime @default(now(), map: "DF__produtos__update__4959E263") @db.DateTime
-  id                  String   @db.VarChar(50)
+  id                  String   @unique(map: "KEY_produtos") @db.VarChar(50)
   id_empresa          Int
   ativo               Boolean
   id_pedido           String?  @db.VarChar(50)
@@ -393,11 +393,12 @@ model pedidos_produtos {
   @@schema("pedidos")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model compras_produtos {
   guid              String   @default(dbgenerated("newid()"), map: "DF__produtos__guid__59FA5E80") @db.UniqueIdentifier
   created_at        DateTime @default(now(), map: "DF__produtos__create__5AEE82B9") @db.DateTime
   updated_at        DateTime @default(now(), map: "DF__produtos__update__5BE2A6F2") @db.DateTime
-  id                String   @unique(map: "KEY_produtos") @db.VarChar(50)
+  id                String   @db.VarChar(50)
   id_empresa        Int
   ativo             Boolean
   id_compra         String?  @db.VarChar(50)
@@ -411,6 +412,7 @@ model compras_produtos {
   custo_total       Decimal? @db.Decimal(18, 2)
 
   @@map("produtos")
+  @@ignore
   @@schema("compras")
 }
 
@@ -419,8 +421,8 @@ model usuarios {
   id_empresa Int
   created_at DateTime @default(now(), map: "DF__usuarios__create__24E777C3") @db.DateTime
   updated_at DateTime @default(now(), map: "DF__usuarios__update__25DB9BFC") @db.DateTime
-  usuario    String   @db.VarChar(50)
-  senha      String   @db.VarChar(50)
+  usuario    String   @unique(map: "KEY_usuarios_usuario") @db.VarChar(50)
+  senha      String   @db.VarChar(255)
   nome       String   @db.VarChar(50)
   id_cargo   Int
   cargos     cargos   @relation(fields: [id_cargo], references: [id], onUpdate: NoAction, map: "FK_usuarios_id_cargo")
