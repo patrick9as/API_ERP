@@ -1,6 +1,6 @@
 import { IUsuario } from '../contract/login';
 import { JSONWebToken } from '../utils/jwt';
-import { GetByUsuarioAndSenha } from '../repository/usuarios';
+import { GetByUsuarioAndSenha } from './usuario';
 
 async function Logar(data: IUsuario) {
 
