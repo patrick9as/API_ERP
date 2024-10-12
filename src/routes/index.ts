@@ -7,7 +7,7 @@ import { ControllerCliente } from '../controller/cliente';
 const routes = Router();
 
 routes.use(ControllerLogin);
-routes.use(ControllerUsuario);
+// routes.use(ControllerUsuario);
 routes.use(ControllerEmpresa);
 routes.use(ControllerCliente);
 
